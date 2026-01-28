@@ -9,6 +9,7 @@ import chat_multi.comun.Configuracion;
 import chat_multi.comun.Constantes;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import static chat_multi.comun.Constantes.SALA_JIUSTON;
@@ -19,7 +20,7 @@ public class GestorSalas {
 
     // Creación del constructor. Inizializacion del gestor y las salas reservadas
     public GestorSalas() {
-        this.salas = salas;
+        this.salas = new HashMap<>();
         inicializarSalasReservadas();
     }
 
@@ -50,8 +51,8 @@ public class GestorSalas {
     /* Método para comprobar la existencia de una sala
        recibe por parametro el nombre de la sala
     */
-    public boolean existeSala(String nomreSala) {
-        return salas.containsKey(nomreSala);
+    public boolean existeSala(String nombreSala) {
+        return salas.containsKey(nombreSala);
     }
 
     // Creación de una sala nueva con aforo especifico
@@ -74,7 +75,7 @@ public class GestorSalas {
         }
 
         int aforoMaximo = Configuracion.getMaxSalaAforo();
-        if (aforo <= 0 || aforoMaximo > aforoMaximo) {
+        if (aforo <= 0 || aforo > aforoMaximo) {
             return "Aforo invalido.";
         }
 
@@ -114,7 +115,7 @@ public class GestorSalas {
     * Método para eliminar una sala forzosamente, expulsando usuarios a recepcion.
     * Para que funciones no puede ser una sala reservada y los usuarios expulsados deben caber en recepcion.
     */
-    public String eliminarSalaForzasamente(String nombreSala) {
+    public String eliminarSalaForzosamente(String nombreSala) {
         if (!salas.containsKey(nombreSala)) {
             return "La sala no existe.";
         }
@@ -148,6 +149,41 @@ public class GestorSalas {
         return "Sala eliminada forzosamente con exito.";
     }
 
+    /* Método para cambiar el aforo de una sala. La sala debe existir, el nuevo aforo debe estar entre 1 y el
+    * maximo permitido y no puede reducirse al numero actual de usuarios
+    */
+    public String cambiarAforo(String nombreSala, int nuevoAforo) {
+        if (!salas.containsKey(nombreSala)) {
+            return "La sala no existe.";
+        }
+
+        Sala sala = salas.get(nombreSala);
+
+        int aforoMaximo = Configuracion.getMaxSalaAforo();
+        if (nuevoAforo <= 0 || nuevoAforo > aforoMaximo) {
+            return "Aforo invalido.";
+        }
+
+        if (nuevoAforo < sala.getCantidadUsuario()) {
+            return "El aforo no puede ser menos a los usuarios que hay en la sala.";
+        }
+
+        sala.setAforo(nuevoAforo);
+        return "Aforo cambiado correctamente.";
+    }
+
+    /* Método para que se elimine una sala si está vacia y no es reservada.*/
+    public void eliminarAutomaticamenteSiVacia(String nombreSala) {
+        if (!salas.containsKey(nombreSala)) {
+            return;
+        }
+
+        Sala sala = salas.get(nombreSala);
+
+        if (sala.estaVacia() && !sala.isEsReservada()) {
+            salas.remove(nombreSala);
+        }
+    }
 
 
 
