@@ -34,7 +34,7 @@ public class Configuracion {
         return propiedades.getProperty("servidor.ip", "127.0.0.1");
     }
 
-    // Obtencion del puerto del servidor
+    // Obtención del puerto del servidor
     public static int getServidorPuerto() {
         return Integer.parseInt(propiedades.getProperty("servidor.puerto", "12345"));
     }
