@@ -7,11 +7,9 @@ package chat_multi.servidor;
 
 import chat_multi.comun.Configuracion;
 import chat_multi.comun.Constantes;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
 import static chat_multi.comun.Constantes.SALA_JIUSTON;
 import static chat_multi.comun.Constantes.SALA_RECEPCION;
 
