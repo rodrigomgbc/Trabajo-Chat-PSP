@@ -119,6 +119,14 @@ public class Sala {
         }
     }
 
+    /*
+    * Método para notificar a todos los participantes de la sala
+    */
+    public void notificarMensaje(String mensaje) {
+        usuariosEnSala.stream()
+                .forEach(usuario -> usuario.enviarMensaje(mensaje));
+    }
+
     // Método toString
     @Override
     public String toString() {

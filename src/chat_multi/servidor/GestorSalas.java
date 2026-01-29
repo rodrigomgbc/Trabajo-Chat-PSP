@@ -46,7 +46,8 @@ public class GestorSalas {
         return salas.values();
     }
 
-    /* Método para comprobar la existencia de una sala
+    /*
+       Método para comprobar la existencia de una sala
        recibe por parametro el nombre de la sala
     */
     public boolean existeSala(String nombreSala) {
