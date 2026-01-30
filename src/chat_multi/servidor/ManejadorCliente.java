@@ -205,7 +205,8 @@ public class ManejadorCliente implements Runnable {
     }
 
     // Comandos
-    /*
+    /**
+    * Método para comando /ayuda
     * /ayuda - Muestra ayuda según el tipo de usuario
     */
     private void cmdAyuda() {
@@ -241,7 +242,8 @@ public class ManejadorCliente implements Runnable {
         }
     }
 
-    /*
+    /**
+    * Método para comando /quien_soy
     * /quien_soy - Información del  usuario
     */
     private void cmdQuienSoy() {
@@ -257,7 +259,8 @@ public class ManejadorCliente implements Runnable {
         salida.println("");
     }
 
-    /*
+    /**
+     * Método para comando /salas
     * /salas - Lista de sala
     */
     private void cmdSalas() {
@@ -312,5 +315,27 @@ public class ManejadorCliente implements Runnable {
             }
         }
         salida.println("");
+    }
+
+    /**
+     * Método para comando /mensaje
+     * /mensaje <usuario> <texto> o /mensaje <texto>
+    */
+    private void cmdMensaje (String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Hace falta argumento. Uso: /mensaje <texto> o /mensaje <usuario> <texto>.");
+            return;
+        }
+
+        String[] partes = argumento.split(" ", 2);
+
+        if (partes.length == 1) {
+            // Mensaje a broadcast a la sala
+            String texto = partes[0];
+            Sala salaActual = gestorSalas.obtenerSala(usuario.getSalaActual());
+            salaActual.notificarMensaje("[BROADCAST] " + usuario.getNombre() + ": " + texto);
+        } else {
+
+        }
     }
 }
