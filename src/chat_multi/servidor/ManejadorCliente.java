@@ -42,18 +42,40 @@ public class ManejadorCliente implements Runnable {
         try {
             //Inicialización de streams
             entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+            salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 
             // Validación de nombre y rol
+            if (!validarAutenticacion()) {
+                return; // Desconexión
+            }
 
-        } catch () {
+            // Usuario autenticado correctamente
+            logger.registrarConexion(usuario.getNombre(), usuario.getRol(), usuario.getSalaActual());
+            salida.println("¡Conectado a " + Constantes.SERVIDOR_NOMBRE + "!");
+            salida.println("Escribe /ayuda para ver los comandos disponibles");
+
+            // Bucle principal para recibir y procesar comandos
+            String linea;
+            while (conectado && (linea = entrada.readLine()) != null) {
+                if (linea.trim().isEmpty()) {
+                    continue;
+                }
+
+                if (linea.startsWith(Constantes.PREFIJO_COMANDO)) {
+                    procesarComando(linea);
+                } else {
+                    // Mensaje de broadcast a la sala
+                    procesarMensajeBroadcast(linea);
+                }
+            }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("Error en ManejadorCliente: " + e.getMessage());
         } finally {
-
+            desconectar();
         }
     }
+
     // Autenticación
     private boolean validarAutenticacion() {
         try {
@@ -164,7 +186,7 @@ public class ManejadorCliente implements Runnable {
                 if (validarAdmin()) cmdInfoSala(argumento);
             }
             case "info_usuario" -> {
-                if (validarAdmin()) cmdInforUsuario(argumento);
+                if (validarAdmin()) cmdInfoUsuario(argumento);
             }
             case "mensaje_todos" -> {
                 if (validarAdmin()) cmdMensajeTodos(argumento);
@@ -278,7 +300,7 @@ public class ManejadorCliente implements Runnable {
                 sala.getNombre(),
                 tipo,
                 sala.getCantidadUsuario(),
-                sala.getNombre()
+                sala.getAforo()
         );
     }
 
@@ -349,7 +371,7 @@ public class ManejadorCliente implements Runnable {
             }
 
             if (destinatario == null) {
-                salida.println("Usuario no encontrado" + (esAdmin ? "." : " en esta sala."));
+                salida.println("Usuario no encontrado " + (esAdmin ? "." : " en esta sala."));
                 return;
             }
 
@@ -383,6 +405,7 @@ public class ManejadorCliente implements Runnable {
 
         if (!gestorSalas.existeSala(nombreSala)) {
             salida.println("La sala '" + nombreSala + "'no existe");
+            return;
         }
 
         // No se puede cambiar de sala si ya se está en la sala
@@ -402,7 +425,7 @@ public class ManejadorCliente implements Runnable {
 
         // Quitar de la sala actual, en la que te encuentras.
         salaActual.eliminarUsuario(usuario);
-        salaNueva.notificarMensaje(usuario.getNombre() + " ha abandonado la sala.l");
+        salaNueva.notificarMensaje(usuario.getNombre() + " ha abandonado la sala.");
 
         // Autoeliminación de la sala si se queda vacia
         gestorSalas.eliminarSiVacia(usuario.getSalaActual());
@@ -551,7 +574,7 @@ public class ManejadorCliente implements Runnable {
     /*
     * Método para el comando /expulsa, sirve para expulsar usuarios de una sala
     */
-    private void cdmExpulsa(String argumento) {
+    private void cmdExpulsa(String argumento) {
         if (argumento.isBlank()) {
             salida.println("Uso incorrecto del comando. Uso: /expulsa <usuario> [mensaje]");
             return;
@@ -612,7 +635,7 @@ public class ManejadorCliente implements Runnable {
     /*
     * Método para el comando /info_usuario <usuario>, este comando da info del usuario <usuario>
     */
-    private void cmdInforUsuario(String argumento) {
+    private void cmdInfoUsuario(String argumento) {
         if (argumento.isBlank()) {
             salida.println("Uso incorrecto del comando. Uso: /info_usuario <usuario>");
             return;
@@ -650,5 +673,65 @@ public class ManejadorCliente implements Runnable {
 
         gestorUsuarios.obtenerTodosLosUsuarios().stream()
                 .forEach(usu -> usu.enviarMensaje(mensaje));
+    }
+
+    /*
+    * Método para el comando apagar, /apagar sirve para apagar el servidor
+    */
+    private void cmdApaga() {
+        String mensajeDesconexion = "El servidor ha sido apagado por un administrador.";
+
+        // Desconectar a todos los usuarios
+        gestorUsuarios.desconectarTodos(mensajeDesconexion);
+
+        salida.println("Servidor apagado.");
+        conectado = false;
+
+        // Salir del programa con exito
+        System.exit(0);
+    }
+
+    // Procesamiento de mensajes
+    /*
+    * Método para procesar un mensaje de broadcast pero sin comando
+    */
+    private void procesarMensajeBroadcast(String texto) {
+        Sala salaActual = gestorSalas.obtenerSala(usuario.getSalaActual());
+        salaActual.notificarMensaje(usuario.getNombre() + ": " + texto);
+    }
+
+    // Desconexión
+    /*
+    * Desconectar al usuario y limpiar
+    */
+    private void desconectar() {
+        if (usuario != null) {
+            // Eliminar de la sala
+            Sala salaActual = gestorSalas.obtenerSala(usuario.getSalaActual());
+            if (salaActual != null) {
+                salaActual.eliminarUsuario(usuario);
+                salaActual.notificarMensaje(usuario.getNombre() + " ha abandonado la sala.");
+
+                // Eliminar sala si se queda vacia
+                gestorSalas.eliminarSiVacia(usuario.getSalaActual());
+            }
+
+            // Eliminar del gestor
+            gestorUsuarios.eliminarUsuario(usuario.getNombre());
+
+            // Registrar en el log
+            logger.registrarDesconexion(usuario.getNombre());
+
+            System.out.println("[SERVIDOR] Usuario " + usuario.getNombre() + " desconectado.");
+
+            // Cerrar los streams y los sockets
+            try {
+                if (entrada != null) entrada.close();
+                if (salida != null) salida.close();
+                if (socket != null) socket.close();
+            } catch (IOException e) {
+                System.err.println("Error cerrando conexión: " + e.getMessage());
+            }
+        }
     }
 }

@@ -3,6 +3,8 @@ package chat_multi.comun;
 // Constantes globales. Comandos, nombre de salas, reservadas, roles, etc.
 
 public class Constantes {
+    // Nombre servidor
+    public static  final String SERVIDOR_NOMBRE = "Servidor-Rodrigo";
 
     // Comandos cliente
     public static final String CMD_AYUDA          = "/ayuda";
