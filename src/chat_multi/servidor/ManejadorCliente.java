@@ -335,7 +335,165 @@ public class ManejadorCliente implements Runnable {
             Sala salaActual = gestorSalas.obtenerSala(usuario.getSalaActual());
             salaActual.notificarMensaje("[BROADCAST] " + usuario.getNombre() + ": " + texto);
         } else {
+            // Mensaje privado a un usuario
+            String nombreUsuario = partes[0];
+            String texto = partes[1];
 
+            Usuario destinatario;
+            if (esAdmin) {
+                // Los Administradores pueden enviar a cualquier usuario
+                destinatario = gestorUsuarios.obtenerUsuario(nombreUsuario);
+            } else {
+                // Los usuarios basicos solo pueden enviar mensajes a usuarios de su misma sala
+                destinatario = gestorUsuarios.obtenerUsuarioPorNombreEnSala(nombreUsuario, usuario.getSalaActual());
+            }
+
+            if (destinatario == null) {
+                salida.println("Usuario no encontrado" + (esAdmin ? "." : " en esta sala."));
+                return;
+            }
+
+            if (destinatario.getNombre().equals(usuario.getNombre())) {
+                salida.println("No puedes mandarte mensajesa ti mismo.");
+                return;
+            }
+
+            destinatario.enviarMensaje("[PRIVADO de " + usuario.getNombre() + "]: " + texto);
+            salida.println("Mensaje enviado a " + nombreUsuario);
+        }
+    }
+
+    /**
+     * Método para comando /unirse <sala>
+     * Solo para usuarios básicos
+     */
+    private void cmdUnirse(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso de /unirse: /unirse <sala>");
+            return;
+        }
+
+        String nombreSala = argumento.trim();
+
+        // No se puede enstrar a Jiuston
+        if (nombreSala.equals(Constantes.SALA_JIUSTON)) {
+            salida.println("No tienes permisos para acceder a esta sala.");
+            return;
+        }
+
+        if (!gestorSalas.existeSala(nombreSala)) {
+            salida.println("La sala '" + nombreSala + "'no existe");
+        }
+
+        // No se puede cambiar de sala si ya se está en la sala
+        if (usuario.getSalaActual().equals(nombreSala)) {
+            salida.println("Ya te encuentras en la sala a la que te quieres unir.");
+            return;
+        }
+
+        Sala salaActual = gestorSalas.obtenerSala(usuario.getSalaActual());
+        Sala salaNueva = gestorSalas.obtenerSala(nombreSala);
+
+        // Comprobación de que la sala nueva no está llena
+        if (salaNueva.estaLlena()) {
+            salida.println("La sala a la que te estás intentando unir está llena.");
+            return;
+        }
+
+        // Quitar de la sala actual, en la que te encuentras.
+        salaActual.eliminarUsuario(usuario);
+        salaNueva.notificarMensaje(usuario.getNombre() + " ha abandonado la sala.l");
+
+        // Autoeliminación de la sala si se queda vacia
+        gestorSalas.eliminarSiVacia(usuario.getSalaActual());
+
+        // Agregar a la sala nueva
+        salaNueva.agregarUsuario(usuario);
+        usuario.setSalaActual(nombreSala);
+        salaNueva.notificarMensaje(usuario.getNombre() + " ha entrado en la sala.");
+        salida.println("Has cambiado a la sala " + nombreSala);
+    }
+
+    /**
+     * Método para el comando ping
+     * /ping <usuario> - Solo para usuarios basicos
+     */
+    private void cmdPing(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso: /ping <usuario>");
+            return;
+        }
+
+        String nombreUsuario = argumento.trim();
+        Usuario destinatario = gestorUsuarios.obtenerUsuarioPorNombreEnSala(nombreUsuario, usuario.getSalaActual());
+
+        if (destinatario == null) {
+            salida.println("El usuario '" + nombreUsuario + "' no está en la sala.");
+            return;
+        }
+
+        salida.println("POOOONG " + nombreUsuario + " está en tu sala.");
+    }
+
+    /**
+     * Método para abandonar la sala
+     * /abandona
+     */
+    private void cmdAbandona() {
+        salida.println("¡Adiós!");
+        conectado = false;
+    }
+
+    // Métodos exclusivos para admin
+    /**
+     * Método para crear una sala
+     */
+    private void cmdCrea(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso: /crea <sala> [aforo]");
+            return;
+        }
+
+        String[] partes = argumento.split(" ");
+        String nombreSala = partes[0];
+
+        String resultado;
+        if (partes.length > 1) {
+            try {
+                int aforo = Integer.parseInt(partes[1]);
+                resultado = gestorSalas.crearSala(nombreSala, aforo);
+            } catch (NumberFormatException e) {
+                salida.println("❌ El aforo debe ser un número.");
+                return;
+            }
+        } else {
+                resultado = gestorSalas.crearSala(nombreSala);
+        }
+
+        if (resultado.equals("Sala creada con exito")) {
+            salida.println("sala creada con exito");
+        } else {
+            salida.println("No se ha podido crear la sala");
+        }
+    }
+
+    /*
+    * Método para eliminar una sala
+    * /elimina <sala>
+    */
+    private void cmdElimina(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso: /elimina <sala>");
+            return;
+        }
+
+        String nombreSala = argumento.trim();
+        String resultado = gestorSalas.eliminarSala(nombreSala);
+
+        if (resultado.equals("Sala eliminada con exito.")) {
+            salida.println("Sala eliminada con éxito.");
+        } else {
+            salida.println("No se ha podido eliminar la sala");
         }
     }
 }

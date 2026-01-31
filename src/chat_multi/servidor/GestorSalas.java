@@ -184,6 +184,16 @@ public class GestorSalas {
         }
     }
 
+    /**
+     * Método para eliminar una sala si está vacia
+     */
+    public void eliminarSiVacia(String nombreSala) {
+        Sala sala = salas.get(nombreSala);
 
-
+        if (sala != null && sala.getUsuariosEnSala().isEmpty()) {
+            salas.remove(nombreSala);
+            System.out.println("[SERVIDOR] Sala eliminada");
+            return;
+        }
+    }
 }
