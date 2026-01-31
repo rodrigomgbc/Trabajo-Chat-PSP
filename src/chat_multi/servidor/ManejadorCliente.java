@@ -146,31 +146,31 @@ public class ManejadorCliente implements Runnable {
 
             // Comandos para administradores
             case "crea" -> {
-                if (validarAdmin() cmdCrea(argumento));
+                if (validarAdmin()) cmdCrea(argumento);
             }
             case "elimina" -> {
-                if (validarAdmin() cmdElimina(argumento));
+                if (validarAdmin()) cmdElimina(argumento);
             }
             case "cambiar_aforo" -> {
-                if (validarAdmin() cmdCambiaAforo(argumento));
+                if (validarAdmin()) cmdCambiaAforo(argumento);
             }
             case "elimina_forzado" -> {
-                if (validarAdmin() cmdEliminaForzado(argumento));
+                if (validarAdmin()) cmdEliminaForzado(argumento);
             }
             case "expulsa" -> {
-                if (validarAdmin() cmdExpulsa(argumento));
+                if (validarAdmin()) cmdExpulsa(argumento);
             }
             case "info_sala" -> {
-                if (validarAdmin() cmdInfoSala(argumento));
+                if (validarAdmin()) cmdInfoSala(argumento);
             }
             case "info_usuario" -> {
-                if (validarAdmin() cmdInforUsuario(argumento));
+                if (validarAdmin()) cmdInforUsuario(argumento);
             }
             case "mensaje_todos" -> {
-                if (validarAdmin() cmdMensajeTodos(argumento));
+                if (validarAdmin()) cmdMensajeTodos(argumento);
             }
             case "apaga" -> {
-                if (validarAdmin() cmdApaga());
+                if (validarAdmin()) cmdApaga();
             }
 
             // Comandos solo usuario basico
@@ -463,7 +463,7 @@ public class ManejadorCliente implements Runnable {
                 int aforo = Integer.parseInt(partes[1]);
                 resultado = gestorSalas.crearSala(nombreSala, aforo);
             } catch (NumberFormatException e) {
-                salida.println("❌ El aforo debe ser un número.");
+                salida.println("El aforo debe ser un número.");
                 return;
             }
         } else {
@@ -478,7 +478,7 @@ public class ManejadorCliente implements Runnable {
     }
 
     /*
-    * Método para eliminar una sala
+    * Método para el comando para eliminar una sala
     * /elimina <sala>
     */
     private void cmdElimina(String argumento) {
@@ -495,5 +495,160 @@ public class ManejadorCliente implements Runnable {
         } else {
             salida.println("No se ha podido eliminar la sala");
         }
+    }
+
+    /*
+    * Método para el comando /cambiar_aforo
+    * /cambia_aforo <sala> <aforo>
+    */
+    private void cmdCambiaAforo(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso incorrecto del comando. Uso: /cambia_aforo <sala> <aforo>");
+            return;
+        }
+
+        String[] partes = argumento.split(" ");
+        if (partes.length < 2) {
+            salida.println("Uso incorrecto del comando. Uso: /cambia_aforo <sala> <aforo>");
+            return;
+        }
+
+        String nombreSala = partes[0];
+        try {
+            int nuevoAforo = Integer.parseInt(partes[1]);
+            String resultado = gestorSalas.cambiarAforo(nombreSala, nuevoAforo);
+
+            if (resultado.equals("Aforo cambiado correctamente.")) {
+                salida.println("éxito" + resultado);
+            } else {
+                salida.println("fracaso" + resultado);
+            }
+        } catch (NumberFormatException e) {
+            salida.println("ERROR: El afoto debe ser un numero.");
+        }
+    }
+
+    /*
+    * Método para el comando /elimina_forzado, que sirve para eliminar de manera forzosa una sala.
+    */
+    private void cmdEliminaForzado(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso incorrecto del comando. Uso: /elimina_forzado <sala>");
+            return;
+        }
+
+        String nombreSala = argumento.trim();
+        String resultado = gestorSalas.eliminarSalaForzosamente(nombreSala);
+
+        // Revistar el tema del resultado a ver como se ve en terminal
+        if (resultado.contains("exito")) {
+            salida.println(resultado);
+        } else {
+            salida.println(resultado);
+        }
+    }
+
+    /*
+    * Método para el comando /expulsa, sirve para expulsar usuarios de una sala
+    */
+    private void cdmExpulsa(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso incorrecto del comando. Uso: /expulsa <usuario> [mensaje]");
+            return;
+        }
+
+        String[] partes = argumento.split(" ", 2);
+        String nombreUsuario = partes[0];
+        String razon = partes.length > 1 ? partes[1] : "Sin especificar";
+
+        Usuario usuarioAExpulsar = gestorUsuarios.obtenerUsuario(nombreUsuario);
+
+        if (usuarioAExpulsar == null) {
+            salida.println("El usuario que estas intentado expulsar no existe");
+            return;
+        }
+
+        if (usuarioAExpulsar.esAdmin()) {
+            salida.println("No puedes expulsar a otro administrador");
+            return;
+        }
+
+        // Expulsar al usuario si se cumplen las condiciones
+        Sala salaActual = gestorSalas.obtenerSala(usuarioAExpulsar.getSalaActual());
+        salaActual.eliminarUsuario(usuarioAExpulsar);
+        gestorUsuarios.eliminarUsuario(nombreUsuario);
+
+        usuarioAExpulsar.enviarMensaje("Has sido expulsado de la sala. Razon: " + razon);
+
+        logger.registrarExpulsion(nombreUsuario, razon);
+        salida.println("usuario " + nombreUsuario + " expulsado");
+    }
+
+    /*
+    * Método para el comando /info_sala, este comando da informacion de la sala.
+    */
+    private void cmdInfoSala(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso incorrecto del comando. Uso: /info_sala <sala>");
+            return;
+        }
+
+        String nombreSala = argumento.trim();
+        Sala sala = gestorSalas.obtenerSala(nombreSala);
+
+        if (sala == null) {
+            salida.println("La sala de la cual estás intentando obtener información no existe");
+            return;
+        }
+
+        salida.println("INFORMACIÓN DE SALA");
+        salida.println("Nombre: " + sala.getNombre());
+        salida.println("Tipo: " + (sala.isEsReservada() ? "Reservada" : "Pública"));
+        salida.println("Creada: " + sala.getFechaCreacion());
+        salida.println("Usuarios: " + sala.getCantidadUsuario() + "/" + sala.getAforo());
+        salida.println();
+    }
+
+    /*
+    * Método para el comando /info_usuario <usuario>, este comando da info del usuario <usuario>
+    */
+    private void cmdInforUsuario(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso incorrecto del comando. Uso: /info_usuario <usuario>");
+            return;
+        }
+
+        String nombreUsuario = argumento.trim();
+        Usuario usu = gestorUsuarios.obtenerUsuario(nombreUsuario);
+
+        if (usu == null) {
+            salida.println("El usuario no existe.");
+            return;
+        }
+
+        long segundosConectado = ChronoUnit.SECONDS.between(usu.getTiempoConexion(), LocalDateTime.now());
+        long minutos = segundosConectado / 60;
+        long segundos = segundosConectado % 60;
+
+        salida.println("USUARIO: " + usu.getNombre() + " ---");
+        salida.println("Rol: " + usu.getRol().toUpperCase());
+        salida.println("Sala actual: " + usu.getSalaActual());
+        salida.println("Tiempo conectado: " + minutos + "m " + segundos + "s");
+        salida.println();
+    }
+
+    /*
+    * Método para el comando /mensaje_todos <mensaje>. Este comando sirve para que un admin mande un mensaje a todos los usuarios de una sala.
+    */
+    private void cmdMensajeTodos(String argumento) {
+        if (argumento.isBlank()) {
+            salida.println("Uso incorrecto del comando. Uso: /mensaje_todos <mensaje>");
+            return;
+        }
+
+        String mensaje = "[ADMIN A TODOS]: " + usuario.getNombre() + ": " + argumento;
+
+        gestorUsuarios.obtenerTodosLosUsuarios().stream()
+                .forEach(usu -> usu.enviarMensaje(mensaje));
     }
 }
