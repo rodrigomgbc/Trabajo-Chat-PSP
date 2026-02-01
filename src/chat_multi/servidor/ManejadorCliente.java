@@ -89,34 +89,50 @@ public class ManejadorCliente implements Runnable {
 
             String nombre = entrada.readLine();
             if (nombre == null || nombre.isBlank()) {
-                salida.println("El nombre no puede estár vacio.");
+                salida.println("El nombre no puede estar vacío.");
                 return false;
             }
 
-            // Validar nombre único
             if (gestorUsuarios.existeUsuario(nombre)) {
                 salida.println("Ese nombre ya está en uso. Prueba con otro nombre.");
                 return false;
             }
 
-            // Pedir rol
-            salida.println("Elige rol. basico o admin");
-            salida.print(">>> ");
-            salida.flush();
+            // Uso de bucle para que no se quede colgada la consola cunado te equivocas de rol
+            String rol = "";
+            boolean rolValido = false;
 
-            String rol = entrada.readLine().toLowerCase();
-            if (!rol.equals(Constantes.ROL_BASICO.toLowerCase()) && !rol.equals(Constantes.ROL_ADMIN.toLowerCase())) {
-                salida.println("Rol invalido, debes elegir 'basico' o 'admin'.");
-                return false;
+            while (!rolValido) {
+                salida.println("Elige rol. basico o admin");
+                salida.print(">>> ");
+                salida.flush();
+
+                rol = entrada.readLine();
+                if (rol == null || rol.isBlank()) {
+                    salida.println("Rol inválido, debes elegir 'basico' o 'admin'.");
+                    continue;
+                }
+
+                rol = rol.toLowerCase();
+
+                if (rol.equals(Constantes.ROL_BASICO.toLowerCase()) || rol.equals(Constantes.ROL_ADMIN.toLowerCase())) {
+                    rolValido = true;
+                } else {
+                    salida.println("Rol inválido, debes elegir 'basico' o 'admin'.");
+                }
             }
 
-            // Si es admin, tienes que pedir contraseña
             if (rol.equals(Constantes.ROL_ADMIN.toLowerCase())) {
                 salida.println("Introduce la contraseña de administrador:");
                 salida.print(">>> ");
                 salida.flush();
 
                 String password = entrada.readLine();
+                if (password == null) {
+                    salida.println("Contraseña inválida.");
+                    return false;
+                }
+
                 String passwordCorrecta = Configuracion.getAdminPassword();
 
                 if (!password.equals(passwordCorrecta)) {
@@ -128,7 +144,7 @@ public class ManejadorCliente implements Runnable {
                         salida.close();
                         socket.close();
                     } catch (Exception e) {
-                        // Ignorar porque ay está cerrado
+                        // Ignorar
                     }
                     return false;
                 }
@@ -136,33 +152,31 @@ public class ManejadorCliente implements Runnable {
                 esAdmin = true;
             }
 
-            // Crear usuario
             String salaInicial = esAdmin ? Constantes.SALA_JIUSTON : Constantes.SALA_RECEPCION;
             usuario = new Usuario(nombre, rol, salaInicial, salida);
 
-            // Agregar usuario al gestor
             String resultado = gestorUsuarios.agregarUsuario(usuario);
             if (!resultado.equals("Agregado con exito.")) {
                 salida.println("Error al conectarse: " + resultado);
                 return false;
             }
 
-            // Agregar usuario a la sala inicial
             Sala salaActual = gestorSalas.obtenerSala(salaInicial);
             if (!salaActual.agregarUsuario(usuario)) {
-                salida.println("La salida está llena. No se pudo conectar.");
+                salida.println("La sala está llena. No se pudo conectar.");
                 gestorUsuarios.eliminarUsuario(nombre);
                 return false;
             }
 
-            // Notificar a otros usuarios de la sala
             salaActual.notificarMensaje(usuario.getNombre() + " ha entrado en la sala.");
             return true;
+
         } catch (IOException e) {
             System.err.println("Error en autenticación: " + e.getMessage());
             return false;
         }
     }
+
 
     // Procesamiento de comandos
     private void procesarComando(String linea) {
@@ -186,7 +200,7 @@ public class ManejadorCliente implements Runnable {
             case "elimina" -> {
                 if (validarAdmin()) cmdElimina(argumento);
             }
-            case "cambiar_aforo" -> {
+            case "cambia_aforo" -> {
                 if (validarAdmin()) cmdCambiaAforo(argumento);
             }
             case "elimina_forzado" -> {
@@ -335,7 +349,7 @@ public class ManejadorCliente implements Runnable {
 
         // Usuario básico no puede ver usuarios de jiuston
         if (!esAdmin && nombreSala.equals(Constantes.SALA_JIUSTON)) {
-            salida.println("No tienes permisos para ver esa sala.");
+            salida.println("No tienes permisos para ver esa sala o no existe.");
             return;
         }
 
@@ -364,29 +378,18 @@ public class ManejadorCliente implements Runnable {
 
         String[] partes = argumento.split(" ", 2);
 
-        if (partes.length == 1) {
-            // Mensaje a broadcast a la sala
-            String texto = partes[0];
-            Sala salaActual = gestorSalas.obtenerSala(usuario.getSalaActual());
-            salaActual.notificarMensaje("[BROADCAST] " + usuario.getNombre() + ": " + texto);
+        // Verificar si el primer argumento es un usuario válido
+        Usuario destinatario = null;
+        if (esAdmin) {
+            destinatario = gestorUsuarios.obtenerUsuario(partes[0]);
         } else {
-            // Mensaje privado a un usuario
-            String nombreUsuario = partes[0];
+            destinatario = gestorUsuarios.obtenerUsuarioPorNombreEnSala(partes[0], usuario.getSalaActual());
+        }
+
+        // Si encontramos usuario Y hay segundo argumento = privado
+        if (destinatario != null && partes.length == 2) {
+            // Mensaje privado
             String texto = partes[1];
-
-            Usuario destinatario;
-            if (esAdmin) {
-                // Los Administradores pueden enviar a cualquier usuario
-                destinatario = gestorUsuarios.obtenerUsuario(nombreUsuario);
-            } else {
-                // Los usuarios basicos solo pueden enviar mensajes a usuarios de su misma sala
-                destinatario = gestorUsuarios.obtenerUsuarioPorNombreEnSala(nombreUsuario, usuario.getSalaActual());
-            }
-
-            if (destinatario == null) {
-                salida.println("Usuario no encontrado " + (esAdmin ? "." : " en esta sala."));
-                return;
-            }
 
             if (destinatario.getNombre().equals(usuario.getNombre())) {
                 salida.println("No puedes mandarte mensajesa ti mismo.");
@@ -394,7 +397,12 @@ public class ManejadorCliente implements Runnable {
             }
 
             destinatario.enviarMensaje("[PRIVADO de " + usuario.getNombre() + "]: " + texto);
-            salida.println("Mensaje enviado a " + nombreUsuario);
+            salida.println("Mensaje enviado a " + partes[0]);
+        } else {
+            // Mensaje de broadcast a la sala
+            String texto = argumento;
+            Sala salaActual = gestorSalas.obtenerSala(usuario.getSalaActual());
+            salaActual.notificarMensaje("[BROADCAST] " + usuario.getNombre() + ": " + texto);
         }
     }
 
@@ -506,8 +514,8 @@ public class ManejadorCliente implements Runnable {
                 resultado = gestorSalas.crearSala(nombreSala);
         }
 
-        if (resultado.equals("Sala creada con exito")) {
-            salida.println("sala creada con exito");
+        if (resultado.equals("Sala creada con exito.")) {
+            salida.println("sala creada con exito.");
         } else {
             salida.println("No se ha podido crear la sala");
         }
@@ -529,7 +537,7 @@ public class ManejadorCliente implements Runnable {
         if (resultado.equals("Sala eliminada con exito.")) {
             salida.println("Sala eliminada con éxito.");
         } else {
-            salida.println("No se ha podido eliminar la sala");
+            salida.println("No se ha podido eliminar la sala porque hay usuarios en ella o es RESERVADA.");
         }
     }
 

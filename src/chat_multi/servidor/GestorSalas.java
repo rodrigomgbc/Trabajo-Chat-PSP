@@ -7,9 +7,9 @@ package chat_multi.servidor;
 
 import chat_multi.comun.Configuracion;
 import chat_multi.comun.Constantes;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+
+import java.util.*;
+
 import static chat_multi.comun.Constantes.SALA_JIUSTON;
 import static chat_multi.comun.Constantes.SALA_RECEPCION;
 
@@ -26,8 +26,8 @@ public class GestorSalas {
     private void inicializarSalasReservadas() {
         int aforoDefecto = Configuracion.getSalaAforoPorDefecto();
 
-        Sala recepcion = new Sala(SALA_RECEPCION, aforoDefecto, true);
-        salas.put(SALA_RECEPCION, recepcion);
+        Sala recepcion = new Sala(Constantes.SALA_RECEPCION, aforoDefecto, true);
+        salas.put(Constantes.SALA_RECEPCION, recepcion);
 
         Sala jiuston = new Sala(Constantes.SALA_JIUSTON, aforoDefecto, true);
         salas.put(Constantes.SALA_JIUSTON, jiuston);
@@ -114,39 +114,38 @@ public class GestorSalas {
     * Método para eliminar una sala forzosamente, expulsando usuarios a recepcion.
     * Para que funciones no puede ser una sala reservada y los usuarios expulsados deben caber en recepcion.
     */
-    public String eliminarSalaForzosamente(String nombreSala) {
-        if (!salas.containsKey(nombreSala)) {
-            return "La sala no existe.";
-        }
+    public synchronized String eliminarSalaForzosamente(String nombreSala) {
+        if (!salas.containsKey(nombreSala)) return "La sala no existe.";
 
         Sala sala = salas.get(nombreSala);
-
-        if (sala.isEsReservada()) {
-            return "La sala es reservada no se puede eliminar.";
-        }
+        if (sala.isEsReservada()) return "La sala es reservada no se puede eliminar.";
 
         if (!sala.estaVacia()) {
-            Sala recepcion = salas.get(SALA_RECEPCION);
-
-            int usuariosAMover = sala.getCantidadUsuario();
-            int espacioEnRecepcion = recepcion.getAforo() - recepcion.getCantidadUsuario();
-
-            if (usuariosAMover > espacioEnRecepcion) {
-                return "No caben los usuarios en recepcion.";
+            Sala recepcion = salas.get(Constantes.SALA_RECEPCION);
+            if (recepcion == null) {
+                return "Error: No se puede encontrar la sala de recepción.";
             }
 
-            // Mover los usuarios a recepcion
-            for (Usuario usuario : sala.getUsuariosEnSala()) {
+            // Se copia la lista antes de iterar
+            List<Usuario> usuariosACopiar = new ArrayList<>(sala.getUsuariosEnSala());
+            int espacioEnRecepcion = recepcion.getAforo() - recepcion.getCantidadUsuario();
+
+            if (usuariosACopiar.size() > espacioEnRecepcion)
+                return "No caben los usuarios en recepcion.";
+
+            for (Usuario usuario : usuariosACopiar) {
                 sala.eliminarUsuario(usuario);
                 recepcion.agregarUsuario(usuario);
-                usuario.setSalaActual(SALA_RECEPCION);
-                usuario.enviarMensaje("Fuiste movido a " + SALA_RECEPCION + " porque la sala " + nombreSala + " fue eliminada forzosamente.");
+                usuario.setSalaActual(Constantes.SALA_RECEPCION);
+                usuario.enviarMensaje("Fuiste movido a " + Constantes.SALA_RECEPCION +
+                        " porque la sala " + nombreSala + " fue eliminada forzosamente.");
             }
         }
 
         salas.remove(nombreSala);
         return "Sala eliminada forzosamente con exito.";
     }
+
 
     /* Método para cambiar el aforo de una sala. La sala debe existir, el nuevo aforo debe estar entre 1 y el
     * maximo permitido y no puede reducirse al numero actual de usuarios
@@ -189,11 +188,9 @@ public class GestorSalas {
      */
     public void eliminarSiVacia(String nombreSala) {
         Sala sala = salas.get(nombreSala);
-
-        if (sala != null && sala.getUsuariosEnSala().isEmpty()) {
+        if (sala != null && sala.getUsuariosEnSala().isEmpty() && !sala.isEsReservada()) {  // ✓ Agregamos validación
             salas.remove(nombreSala);
-            System.out.println("[SERVIDOR] Sala eliminada");
-            return;
+            System.out.println("[SERVIDOR] Sala " + nombreSala + " eliminada");
         }
     }
 }

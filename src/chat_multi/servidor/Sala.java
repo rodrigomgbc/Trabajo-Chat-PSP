@@ -130,9 +130,12 @@ public class Sala {
     // Método toString
     @Override
     public String toString() {
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        String fechaFormateada = fechaCreacion.format(formatter);
+
         return String.format(
                 "Sala: %s | Aforo: %d/%d | Usuarios: %d | Creada: %s | Reservada: %s",
-                nombre, usuariosEnSala.size(), aforo, usuariosEnSala.size(), fechaCreacion, esReservada
+                nombre, usuariosEnSala.size(), aforo, usuariosEnSala.size(), fechaFormateada, esReservada
         );
     }
 }
