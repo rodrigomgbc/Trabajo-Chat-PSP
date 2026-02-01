@@ -1,0 +1,58 @@
+[2026-02-01 02:08:24] Conexión - Usuario: Rodrigo | Rol: basico | Sala: recepcion
+[2026-02-01 02:09:36] Desconexión - Usuario: Rodrigo
+[2026-02-01 02:12:55] Conexión - Usuario: Paco | Rol: admin | Sala: jiuston
+[2026-02-01 02:15:06] Desconexión - Usuario: Paco
+[2026-02-01 12:27:28] Conexión - Usuario: Ro | Rol: admin | Sala: jiuston
+[2026-02-01 12:33:26] Conexión - Usuario: paco | Rol: basico | Sala: recepcion
+[2026-02-01 12:34:34] Desconexión - Usuario: paco
+[2026-02-01 12:35:55] Desconexión - Usuario: Alejandro
+[2026-02-01 12:36:16] Conexión - Usuario: rodrigo | Rol: admin | Sala: jiuston
+[2026-02-01 12:36:29] Desconexión - Usuario: alejandro
+[2026-02-01 12:37:55] Desconexión - Usuario: alejandro
+[2026-02-01 12:42:53] Conexión - Usuario: rodrigo | Rol: basico | Sala: recepcion
+[2026-02-01 12:46:50] Conexión - Usuario: alejandro | Rol: admin | Sala: jiuston
+[2026-02-01 12:47:19] Conexión - Usuario: pedro | Rol: basico | Sala: recepcion
+[2026-02-01 12:47:34] Desconexión - Usuario: alejandro
+[2026-02-01 13:20:12] Desconexión - Usuario: pedro
+[2026-02-01 13:20:15] Desconexión - Usuario: rodrigo
+[2026-02-01 13:20:44] Conexión - Usuario: Rodrigo | Rol: basico | Sala: recepcion
+[2026-02-01 13:20:54] Conexión - Usuario: alejandro | Rol: basico | Sala: recepcion
+[2026-02-01 13:39:03] Desconexión - Usuario: Rodrigo
+[2026-02-01 13:39:24] Conexión - Usuario: Rodrigo | Rol: admin | Sala: jiuston
+[2026-02-01 13:42:28] Conexión - Usuario: Juan Carlos | Rol: basico | Sala: recepcion
+[2026-02-01 14:07:04] Desconexión - Usuario: Rodrigo
+[2026-02-01 14:07:07] Desconexión - Usuario: alejandro
+[2026-02-01 14:07:09] Desconexión - Usuario: Juan Carlos
+[2026-02-01 14:07:25] Desconexión - Usuario: Rodrigo
+[2026-02-01 14:11:47] Conexión - Usuario: Rodrigo | Rol: admin | Sala: jiuston
+[2026-02-01 15:07:13] Conexión - Usuario: Jose | Rol: basico | Sala: recepcion
+[2026-02-01 15:16:08] Desconexión - Usuario: Rodrigo
+[2026-02-01 15:17:31] Conexión - Usuario: Rodrigo | Rol: admin | Sala: jiuston
+[2026-02-01 15:17:41] Conexión - Usuario: Juan | Rol: basico | Sala: recepcion
+[2026-02-01 15:59:33] Desconexión - Usuario: Rodrigo
+[2026-02-01 16:26:43] Desconexión - Usuario: Rodrigo
+[2026-02-01 16:27:01] Desconexión - Usuario: Juan
+[2026-02-01 16:27:43] Conexión - Usuario: Rodrigo | Rol: admin | Sala: jiuston
+[2026-02-01 16:27:53] Conexión - Usuario: Alejandro | Rol: basico | Sala: recepcion
+[2026-02-01 16:31:23] Desconexión - Usuario: Rodrigo
+[2026-02-01 16:41:13] Conexión - Usuario: Jorge | Rol: admin | Sala: jiuston
+[2026-02-01 16:51:25] Desconexión - Usuario: Jorge
+[2026-02-01 16:51:49] Conexión - Usuario: Rodrigo | Rol: basico | Sala: recepcion
+[2026-02-01 16:52:02] Conexión - Usuario: pdro | Rol: admin | Sala: jiuston
+[2026-02-01 17:01:21] Conexión - Usuario: Alejandro | Rol: basico | Sala: recepcion
+[2026-02-01 17:01:29] Conexión - Usuario: Rodrigo | Rol: admin | Sala: jiuston
+[2026-02-01 17:11:40] Desconexión - Usuario: Alejandro
+[2026-02-01 17:12:10] Conexión - Usuario: a | Rol: admin | Sala: jiuston
+[2026-02-01 17:12:14] Conexión - Usuario: b | Rol: basico | Sala: recepcion
+[2026-02-01 17:20:13] Expulsión - Usuario: b | Razón: por payo
+[2026-02-01 18:32:05] Conexión - Usuario: Rodrigo | Rol: admin | Sala: jiuston
+[2026-02-01 18:32:12] Conexión - Usuario: a | Rol: basico | Sala: recepcion
+[2026-02-01 18:34:40] Conexión - Usuario: paco | Rol: basico | Sala: recepcion
+[2026-02-01 21:23:18] Conexión - Usuario: Rodrigo | Rol: basico | Sala: recepcion
+[2026-02-01 21:26:30] Conexión - Usuario: RodrigoAdmin | Rol: admin | Sala: jiuston
+[2026-02-01 22:10:54] Conexión - Usuario: Rodrigo | Rol: admin | Sala: jiuston
+[2026-02-01 22:11:27] Conexión - Usuario: Bot1 | Rol: basico | Sala: recepcion
+[2026-02-01 22:13:53] Expulsión - Usuario: Bot1 | Razón: por tolai
+[2026-02-01 22:16:24] Desconexión - Usuario: Bot1
+[2026-02-01 22:16:34] Conexión - Usuario: alejandro | Rol: basico | Sala: recepcion
+[2026-02-01 22:17:30] Desconexión - Usuario: alejandro
