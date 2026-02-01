@@ -22,9 +22,9 @@ public class Configuracion {
         try {
             fis = new FileInputStream("resources/chat.properties");
             propiedades.load(fis);
-            System.out.println("✅ chat.properties cargado correctamente");
+            System.out.println("chat.properties cargado correctamente");
         } catch (IOException e) {
-            System.err.println("❌ Error cargando chat.properties: " + e.getMessage());
+            System.err.println("Error cargando chat.properties: " + e.getMessage());
             e.printStackTrace();
         } finally {
             if (fis != null) {

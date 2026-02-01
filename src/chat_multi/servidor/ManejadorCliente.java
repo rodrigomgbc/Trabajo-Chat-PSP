@@ -46,7 +46,9 @@ public class ManejadorCliente implements Runnable {
 
             // Validación de nombre y rol
             if (!validarAutenticacion()) {
-                System.err.println("Autenticación fallida. Cerrando cliente...");
+                System.err.println("[SERVIDOR] Autenticación fallida. Cerrando cliente...");
+                salida.println("Conexion cerrada");
+                salida.flush();
                 desconectar();
                 return;
             }
@@ -120,6 +122,14 @@ public class ManejadorCliente implements Runnable {
                 if (!password.equals(passwordCorrecta)) {
                     salida.println("Contraseña incorrecta. Desconectando...");
                     salida.flush();
+
+                    try {
+                        entrada.close();
+                        salida.close();
+                        socket.close();
+                    } catch (Exception e) {
+                        // Ignorar porque ay está cerrado
+                    }
                     return false;
                 }
 
