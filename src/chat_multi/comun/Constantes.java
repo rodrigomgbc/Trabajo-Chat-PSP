@@ -6,6 +6,11 @@ public class Constantes {
     // Nombre servidor
     public static  final String SERVIDOR_NOMBRE = "Servidor-Rodrigo";
 
+    // Constantes del cliente
+    public static final String COMANDO_ABANDONA = "/abandona";
+    public static final int TIEMPO_ESPERA_REINTENTOS = 10000; // 10 segundos
+    public static final int MAX_REINTENTOS = 5;
+
     // Comandos cliente
     public static final String CMD_AYUDA          = "/ayuda";
     public static final String CMD_QUIEN_SOY      = "/quien_soy";
