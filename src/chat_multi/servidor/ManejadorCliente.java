@@ -186,51 +186,51 @@ public class ManejadorCliente implements Runnable {
 
         switch (comando) {
             // Comandos para admin y basico
-            case "ayuda" -> cmdAyuda();
-            case "quien_soy" -> cmdQuienSoy();
-            case "salas" -> cmdSalas();
-            case "usuarios" -> cmdUsuarios(argumento);
-            case "mensaje" -> cmdMensaje(argumento);
-            case "abandona" -> cmdAbandona();
+            case Constantes.CMD_AYUDA -> cmdAyuda();
+            case Constantes.CMD_QUIEN_SOY -> cmdQuienSoy();
+            case Constantes.CMD_SALAS -> cmdSalas();
+            case Constantes.CMD_USUARIOS -> cmdUsuarios(argumento);
+            case Constantes.CMD_MENSAJE -> cmdMensaje(argumento);
+            case Constantes.CMD_ABANDONA -> cmdAbandona();
 
             // Comandos para administradores
-            case "crea" -> {
+            case Constantes.CMD_CREA -> {
                 if (validarAdmin()) cmdCrea(argumento);
             }
-            case "elimina" -> {
+            case Constantes.CMD_ELIMINA -> {
                 if (validarAdmin()) cmdElimina(argumento);
             }
-            case "cambia_aforo" -> {
+            case Constantes.CMD_CAMBIA_AFORO -> {
                 if (validarAdmin()) cmdCambiaAforo(argumento);
             }
-            case "elimina_forzado" -> {
+            case Constantes.CMD_ELIMINA_FORZADO -> {
                 if (validarAdmin()) cmdEliminaForzado(argumento);
             }
-            case "expulsa" -> {
+            case Constantes.CMD_EXPULSA -> {
                 if (validarAdmin()) cmdExpulsa(argumento);
             }
-            case "info_sala" -> {
+            case Constantes.CMD_INFO_SALA -> {
                 if (validarAdmin()) cmdInfoSala(argumento);
             }
-            case "info_usuario" -> {
+            case Constantes.CMD_INFO_USUARIO -> {
                 if (validarAdmin()) cmdInfoUsuario(argumento);
             }
-            case "mensaje_todos" -> {
+            case Constantes.CMD_MENSAJE_TODOS -> {
                 if (validarAdmin()) cmdMensajeTodos(argumento);
             }
-            case "apaga" -> {
+            case Constantes.CMD_APAGA -> {
                 if (validarAdmin()) cmdApaga();
             }
 
             // Comandos solo usuario basico
-            case "unirse" -> {
+            case Constantes.CMD_UNIRSE -> {
                 if (!esAdmin) {
                     cmdUnirse(argumento);
                 } else {
                     salida.println("Los administradores no pueden cambiar de sala.");
                 }
             }
-            case "ping" -> {
+            case Constantes.CMD_PING -> {
                 if (!esAdmin) {
                     cmdPing(argumento);
                 } else {
@@ -336,7 +336,7 @@ public class ManejadorCliente implements Runnable {
      */
     private void cmdUsuarios(String argumento) {
         if (argumento.isBlank()) {
-            salida.println("Uso: /usuarios <sala>");
+            salida.println("Uso incorrecto del comando. Uso: /usuarios <sala>");
             return;
         }
 
@@ -412,7 +412,7 @@ public class ManejadorCliente implements Runnable {
      */
     private void cmdUnirse(String argumento) {
         if (argumento.isBlank()) {
-            salida.println("Uso de /unirse: /unirse <sala>");
+            salida.println("Uso incorrecto del comando. Uso de /unirse: /unirse <sala>");
             return;
         }
 
@@ -464,7 +464,7 @@ public class ManejadorCliente implements Runnable {
      */
     private void cmdPing(String argumento) {
         if (argumento.isBlank()) {
-            salida.println("Uso: /ping <usuario>");
+            salida.println("Uso incorrecto del comando. Uso: /ping <usuario>");
             return;
         }
 
@@ -494,7 +494,7 @@ public class ManejadorCliente implements Runnable {
      */
     private void cmdCrea(String argumento) {
         if (argumento.isBlank()) {
-            salida.println("Uso: /crea <sala> [aforo]");
+            salida.println("Uso incorrecto del comando. Uso: /crea <sala> [aforo]");
             return;
         }
 
@@ -527,7 +527,7 @@ public class ManejadorCliente implements Runnable {
     */
     private void cmdElimina(String argumento) {
         if (argumento.isBlank()) {
-            salida.println("Uso: /elimina <sala>");
+            salida.println("Uso incorrecto del comando. Uso: /elimina <sala>");
             return;
         }
 
@@ -568,7 +568,7 @@ public class ManejadorCliente implements Runnable {
                 salida.println("fracaso" + resultado);
             }
         } catch (NumberFormatException e) {
-            salida.println("ERROR: El afoto debe ser un numero.");
+            salida.println("ERROR: El aforo debe ser un numero.");
         }
     }
 

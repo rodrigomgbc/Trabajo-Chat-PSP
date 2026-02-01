@@ -35,14 +35,16 @@ public class Cliente {
                 conectado = true;
             } catch (IOException e) {
                 intentos++;
-                System.err.println("Error de conexión (intento " + intentos + "/" + Constantes.MAX_REINTENTOS + "): " + e.getMessage());
+                System.err.println("Error de conexión (intento " + intentos + "/" + Constantes.MAX_REINTENTOS + ")");
+                System.err.println("   Razón: " + e.getMessage());
 
                 if (intentos < Constantes.MAX_REINTENTOS) {
                     System.out.println("Reintentando en 10 segundos...");
+                    System.out.println();
                     try {
                         Thread.sleep(Constantes.TIEMPO_ESPERA_REINTENTOS);
                     } catch (InterruptedException ie) {
-                        System.err.println("Interrupción durante espera: " + ie.getMessage());
+                        System.err.println("Interrupción: " + ie.getMessage());
                         Thread.currentThread().interrupt();
                         intentos = Constantes.MAX_REINTENTOS;
                     }
@@ -51,8 +53,7 @@ public class Cliente {
         }
 
         if (!conectado) {
-            System.err.println("No se pudo conectar al servidor despues de " + Constantes.MAX_REINTENTOS + " intentos.");
-            System.exit(1);
+            System.err.println("\nNo se pudo conectar después de " + Constantes.MAX_REINTENTOS + " intentos.");
         }
     }
 
