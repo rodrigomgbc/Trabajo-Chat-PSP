@@ -10,12 +10,16 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
+import static chat_multi.comun.Constantes.COMANDO_ABANDONA;
+
 /*
-* Este es el cliente del chat multi-usuario
-* Se conecta al servidor y permite enviar/recibir mensajes
-* Implementa reconexion automatica si falla la conexión
-*/
+ * Este es el cliente del chat multi-usuario
+ * Se conecta al servidor y permite enviar/recibir mensajes
+ * Implementa reconexion automatica si falla la conexión
+ */
 public class Cliente {
+
+    private static volatile boolean desconectar = false;
 
     public static void main(String[] args) {
         String host = Configuracion.getServidorIp();
@@ -40,7 +44,7 @@ public class Cliente {
                     } catch (InterruptedException ie) {
                         System.err.println("Interrupción durante espera: " + ie.getMessage());
                         Thread.currentThread().interrupt();
-                        intentos = Constantes.MAX_REINTENTOS;  // Fuerza la salida del while
+                        intentos = Constantes.MAX_REINTENTOS;
                     }
                 }
             }
@@ -62,42 +66,70 @@ public class Cliente {
             System.out.println("Conectado al servidor en " + host + ":" + puerto);
             System.out.println();
 
+            desconectar = false;
+
             // Thread para recibir mensajes del servidor
             Thread receptorThread = new Thread(() -> {
                 try {
                     String mensaje;
-                    while ((mensaje = entrada.readLine()) != null) {
+                    while ((mensaje = entrada.readLine()) != null && !desconectar) {
                         System.out.println("\r" + mensaje);
                         System.out.print("> ");
                         System.out.flush();
                     }
+                    // Si entrada.readLine() devuelve null, el servidor cerró
+                    if (!desconectar) {
+                        System.err.println("\nConexión cerrada por el servidor.");
+                        desconectar = true;
+                    }
                 } catch (IOException e) {
                     System.err.println("Conexión cerrada por el servidor.");
+                    desconectar = true;
                 }
             });
 
             receptorThread.setDaemon(true);
             receptorThread.start();
 
-            // Thread principal para enviar mensajes
+            // Thread principal: enviar mensajes
             String linea;
-            boolean desconectar = false;
 
             while (!desconectar) {
                 System.out.print("> ");
-                linea = scanner.nextLine();
 
-                if (linea.isEmpty()) {
+                try {
+                    if (!scanner.hasNextLine()) {
+                        // No hay entrada disponible, espera un poco
+                        Thread.sleep(100);
+                        continue;
+                    }
+
+                    linea = scanner.nextLine();
+                } catch (InterruptedException e) {
+                    System.err.println("\nDesconectando...");
+                    desconectar = true;
                     continue;
                 }
 
-                salida.println(linea);
+                if (linea == null || linea.isEmpty()) {
+                    continue;
+                }
 
-                if (linea.equalsIgnoreCase(Constantes.COMANDO_ABANDONA)) {
-                    System.out.println("\n Desconectando...");
+                try {
+                    salida.println(linea);
+                    salida.flush();
+                } catch (Exception e) {
+                    System.err.println("\nError enviando mensaje. Desconectando...");
+                    desconectar = true;
+                    continue;
+                }
+
+                if (linea.equalsIgnoreCase(COMANDO_ABANDONA)) {
+                    System.out.println("\nDesconectando...");
                     desconectar = true;
                 }
             }
+
         } catch (IOException e) {
             throw new IOException("Error de conexion con el servidor: " + e.getMessage(), e);
         }

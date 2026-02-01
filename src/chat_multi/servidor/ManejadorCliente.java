@@ -46,7 +46,9 @@ public class ManejadorCliente implements Runnable {
 
             // Validación de nombre y rol
             if (!validarAutenticacion()) {
-                return; // Desconexión
+                System.err.println("Autenticación fallida. Cerrando cliente...");
+                desconectar();
+                return;
             }
 
             // Usuario autenticado correctamente
@@ -101,13 +103,13 @@ public class ManejadorCliente implements Runnable {
             salida.flush();
 
             String rol = entrada.readLine().toLowerCase();
-            if (!rol.equals(Constantes.ROL_BASICO) && !rol.equals(Constantes.ROL_ADMIN)) {
+            if (!rol.equals(Constantes.ROL_BASICO.toLowerCase()) && !rol.equals(Constantes.ROL_ADMIN.toLowerCase())) {
                 salida.println("Rol invalido, debes elegir 'basico' o 'admin'.");
                 return false;
             }
 
             // Si es admin, tienes que pedir contraseña
-            if (rol.equals(Constantes.ROL_ADMIN)) {
+            if (rol.equals(Constantes.ROL_ADMIN.toLowerCase())) {
                 salida.println("Introduce la contraseña de administrador:");
                 salida.print(">>> ");
                 salida.flush();
@@ -116,7 +118,8 @@ public class ManejadorCliente implements Runnable {
                 String passwordCorrecta = Configuracion.getAdminPassword();
 
                 if (!password.equals(passwordCorrecta)) {
-                    salida.println("Contraseña incorrecta.");
+                    salida.println("Contraseña incorrecta. Desconectando...");
+                    salida.flush();
                     return false;
                 }
 

@@ -8,24 +8,32 @@ package chat_multi.comun;
  *
  * */
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.io.InputStream;
 
 public class Configuracion {
-    private static Properties propiedades;
+    private static final Properties propiedades = new Properties();
     private static final String ARCHIVO_PROPIEDADES = "chat.properties";
 
     static {
-        propiedades = new Properties();
-        try (InputStream entrada = Configuracion.class.getClassLoader().getResourceAsStream(ARCHIVO_PROPIEDADES)) {
-            if (entrada == null) {
-                throw new IOException("Archivo " + ARCHIVO_PROPIEDADES + " no encontrado en recursos");
-            }
-            propiedades.load(entrada);
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream("resources/chat.properties");
+            propiedades.load(fis);
+            System.out.println("✅ chat.properties cargado correctamente");
         } catch (IOException e) {
-            System.err.println("Error cargando la configuración: " + e.getMessage());
+            System.err.println("❌ Error cargando chat.properties: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    System.err.println("Error cerrando archivo: " + e.getMessage());
+                }
+            }
         }
     }
 
